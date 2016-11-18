@@ -1,0 +1,10 @@
+config BR2_PACKAGE_C2PLAY
+        bool "c2play"
+	select BR2_PACKAGE_ALSA_LIB
+	select BR2_PACKAGE_FFMPEG
+	select BR2_PACKAGE_AML_LIBS
+        help
+          ODROID-C2 command line media player.
+
+	  https://github.com/OtherCrashOverride/c2play
+
