@@ -10,7 +10,7 @@
 #include <limits.h>
 #include <math.h>
 #include <string.h>
-
+#include "../../../amffmpeg/libavutil/avstring.h"
 #include "curl_common.h"
 
 void *c_malloc(unsigned int size)

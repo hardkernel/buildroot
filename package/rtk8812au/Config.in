@@ -16,3 +16,8 @@ config BR2_PACKAGE_RTK8812AU_GIT_REPO_URL
 	help
 		rtk8812au git
 
+config BR2_PACKAGE_RTK8812AU_STANDALONE
+	bool "standalone kernel module"
+	depends on BR2_PACKAGE_RTK8812AU
+	help
+	  compile ko directly

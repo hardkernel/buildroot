@@ -32,8 +32,6 @@ define ROOTFS_EXT2_CMD
 	PATH=$(BR_PATH) mke2img -d $(TARGET_DIR) $(EXT2_OPTS) -o $@
 endef
 
-#ROOTFS_EXT2_DEPENDENCIES += host-aml_image_packer
-
 rootfs-ext2-symlink:
 	ln -sf rootfs.ext2$(ROOTFS_EXT2_COMPRESS_EXT) $(BINARIES_DIR)/rootfs.ext$(BR2_TARGET_ROOTFS_EXT2_GEN)$(ROOTFS_EXT2_COMPRESS_EXT)
 
@@ -43,19 +41,29 @@ ifneq ($(BR2_TARGET_ROOTFS_EXT2_GEN),2)
 ROOTFS_EXT2_POST_TARGETS += rootfs-ext2-symlink
 endif
 
-ifeq ($(BR2_TARGET_USBTOOL_AMLOGIC), y)
 DEVICE_DIR := $(patsubst "%",%,$(BR2_ROOTFS_OVERLAY))
-ifneq (,$(wildcard $(DEVICE_DIR)../platform.conf))
+UPGRADE_DIR := $(DEVICE_DIR)../upgrade
+ifeq ($(BR2_TARGET_USBTOOL_AMLOGIC),y)
+ifeq ($(BR2_TARGET_UBOOT_AMLOGIC_2015),y)
 rootfs-usb-image-pack:
-	cp -f $(DEVICE_DIR)../platform.conf $(BINARIES_DIR)
+	cp -rf $(UPGRADE_DIR)/* $(BINARIES_DIR)
+	BINARIES_DIR=$(BINARIES_DIR) \
+	TOOL_DIR=$(HOST_DIR)/usr/bin \
+	$(HOST_DIR)/usr/bin/aml_upgrade_pkg_gen.sh \
+	$(BR2_TARGET_UBOOT_PLATFORM) $(BR2_TARGET_UBOOT_ENCRYPTION)
+else #BR2_TARGET_UBOOT_AMLOGIC_2015
+rootfs-usb-image-pack:
+	cp -f $(UPGRADE_DIR)/platform.conf $(BINARIES_DIR)
 	$(HOST_DIR)/usr/bin/aml_image_v2_packer -r $(BINARIES_DIR)/usb_burn_package.conf $(BINARIES_DIR)/ $(BINARIES_DIR)/aml_upgrade_package.img
-else
-rootfs-usb-image-pack:
-
-endif
+endif #BR2_TARGET_UBOOT_AMLOGIC_2015
 ROOTFS_EXT2_POST_TARGETS += rootfs-usb-image-pack
-endif
+endif #BR2_TARGET_USBTOOL_AMLOGIC
 
+ifeq ($(BR2_TARGET_UBOOT_AMLOGIC_2015),y)
+SD_BOOT = $(BINARIES_DIR)/u-boot.bin.sd.bin
+else
+SD_BOOT = $(BINARIES_DIR)/u-boot.bin
+endif
 mbr-image:
 	@$(call MESSAGE,"Creating mbr image")
 	filesz=`stat -c '%s' $(BINARIES_DIR)/rootfs.ext2`; \
@@ -70,8 +78,8 @@ odroid-uboot:
 	dd if=$(BINARIES_DIR)/u-boot.bin of=$(BINARIES_DIR)/disk.img bs=512 seek=64 conv=notrunc;
 
 amlogic-uboot:
-	dd if=$(BINARIES_DIR)/u-boot.bin of=$(BINARIES_DIR)/disk.img bs=1 count=442 conv=notrunc; \
-	dd if=$(BINARIES_DIR)/u-boot.bin of=$(BINARIES_DIR)/disk.img bs=512 skip=1 seek=1 conv=notrunc;
+	dd if=$(SD_BOOT) of=$(BINARIES_DIR)/disk.img bs=1 count=442 conv=notrunc; \
+	dd if=$(SD_BOOT) of=$(BINARIES_DIR)/disk.img bs=512 skip=1 seek=1 conv=notrunc;
 
 ifeq ($(BR2_TARGET_MBR_IMAGE),y)
 ROOTFS_EXT2_POST_TARGETS += mbr-image

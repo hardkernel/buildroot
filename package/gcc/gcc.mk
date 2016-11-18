@@ -97,22 +97,6 @@ HOST_GCC_COMMON_CONF_ENV = \
 GCC_COMMON_TARGET_CFLAGS = $(TARGET_CFLAGS)
 GCC_COMMON_TARGET_CXXFLAGS = $(TARGET_CXXFLAGS)
 
-# http://gcc.gnu.org/bugzilla/show_bug.cgi?id=43810
-# Workaround until it's fixed in 4.5.4 or later
-ifeq ($(ARCH),powerpc)
-ifeq ($(findstring x4.5.,x$(GCC_VERSION)),x4.5.)
-GCC_COMMON_TARGET_CFLAGS = $(filter-out -Os,$(GCC_COMMON_TARGET_CFLAGS))
-GCC_COMMON_TARGET_CXXFLAGS = $(filter-out -Os,$(GCC_COMMON_TARGET_CXXFLAGS))
-endif
-endif
-
-# Xtensa libgcc can't be built with -mauto-litpools
-# because of the trick used to generate .init/.fini sections.
-ifeq ($(BR2_xtensa),y)
-GCC_COMMON_TARGET_CFLAGS = $(filter-out -mauto-litpools,$(TARGET_CFLAGS))
-GCC_COMMON_TARGET_CXXFLAGS = $(filter-out -mauto-litpools,$(TARGET_CXXFLAGS))
-endif
-
 # Propagate options used for target software building to GCC target libs
 HOST_GCC_COMMON_CONF_ENV += CFLAGS_FOR_TARGET="$(GCC_COMMON_TARGET_CFLAGS)"
 HOST_GCC_COMMON_CONF_ENV += CXXFLAGS_FOR_TARGET="$(GCC_COMMON_TARGET_CXXFLAGS)"
@@ -170,8 +154,14 @@ HOST_GCC_COMMON_CONF_OPTS += --with-mpc=$(HOST_DIR)/usr
 endif
 
 ifeq ($(BR2_GCC_ENABLE_GRAPHITE),y)
-HOST_GCC_COMMON_DEPENDENCIES += host-isl host-cloog
-HOST_GCC_COMMON_CONF_OPTS += --with-isl=$(HOST_DIR)/usr --with-cloog=$(HOST_DIR)/usr
+HOST_GCC_COMMON_DEPENDENCIES += host-isl
+HOST_GCC_COMMON_CONF_OPTS += --with-isl=$(HOST_DIR)/usr
+# gcc 5 doesn't need cloog any more, see
+# https://gcc.gnu.org/gcc-5/changes.html
+ifeq ($(BR2_TOOLCHAIN_GCC_AT_LEAST_5),)
+HOST_GCC_COMMON_DEPENDENCIES += host-cloog
+HOST_GCC_COMMON_CONF_OPTS += --with-cloog=$(HOST_DIR)/usr
+endif
 else
 HOST_GCC_COMMON_CONF_OPTS += --without-isl --without-cloog
 endif
@@ -248,8 +238,8 @@ HOST_GCC_COMMON_CCACHE_HASH_FILES += $(DL_DIR)/$(GCC_SOURCE)
 HOST_GCC_COMMON_CCACHE_HASH_FILES += \
 	$(sort $(wildcard \
 		package/gcc/$(GCC_VERSION)/*.patch \
-		$(addsuffix $((PKG)_RAWNAME)/$(GCC_VERSION)/*.patch,$(call qstrip,$(BR2_GLOBAL_PATCH_DIR))) \
-		$(addsuffix $((PKG)_RAWNAME)/*.patch,$(call qstrip,$(BR2_GLOBAL_PATCH_DIR)))))
+		$(addsuffix /$((PKG)_RAWNAME)/$(GCC_VERSION)/*.patch,$(call qstrip,$(BR2_GLOBAL_PATCH_DIR))) \
+		$(addsuffix /$((PKG)_RAWNAME)/*.patch,$(call qstrip,$(BR2_GLOBAL_PATCH_DIR)))))
 ifeq ($(BR2_xtensa),y)
 HOST_GCC_COMMON_CCACHE_HASH_FILES += $(HOST_GCC_XTENSA_OVERLAY_TAR)
 endif

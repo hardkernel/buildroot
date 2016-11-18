@@ -34,19 +34,18 @@ After building, you should obtain this tree:
     +-- rootfs.ext2
     +-- rootfs.ext4
     +-- rootfs.tar
-    +-- rootfs.tar.gz
     +-- sdcard.img
     `-- u-boot.bin
 
 [1] This is the ODROID-C2 configuration file used in u-boot.
 
 How to write the SD card or eMMC
-========================
+================================
 
 Once the build process is finished you will have an image called "sdcard.img"
 in the output/images/ directory.
 
-Copy the bootable "sdcard.img" onto an SD card with "dd":
+Copy the bootable "sdcard.img" onto an SD card or eMMC with "dd":
 
   $ sudo dd if=output/images/sdcard.img of=/dev/sdX
 

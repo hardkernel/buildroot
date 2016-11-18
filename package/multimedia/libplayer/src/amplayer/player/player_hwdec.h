@@ -69,4 +69,5 @@ int h264_write_end_header(play_para_t *para);
 
 // hevc/h.265
 int hevc_update_frame_header(am_packet_t *pkt);
+int vp9_update_frame_header(am_packet_t *pkt);
 #endif

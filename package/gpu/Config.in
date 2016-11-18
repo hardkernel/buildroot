@@ -37,3 +37,9 @@ config BR2_PACKAGE_GPU_MALI_DRM
 	depends on BR2_PACKAGE_GPU
 	help
 	  build mali_drm.ko
+config BR2_PACKAGE_GPU_MALI_DMA_SHARED_BUFFER
+	bool "enable mali dma shared buffer"
+	depends on BR2_PACKAGE_GPU
+	help
+	  enable shared buffer
+

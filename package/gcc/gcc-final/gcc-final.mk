@@ -27,6 +27,15 @@ HOST_GCC_FINAL_SUBDIR = build
 
 HOST_GCC_FINAL_PRE_CONFIGURE_HOOKS += HOST_GCC_CONFIGURE_SYMLINK
 
+# We want to always build the static variants of all the gcc libraries,
+# of which libstdc++, libgomp, libmudflap...
+# To do so, we can not just pass --enable-static to override the generic
+# --disable-static flag, otherwise gcc fails to build some of those
+# libraries, see;
+#   http://lists.busybox.net/pipermail/buildroot/2013-October/080412.html
+#
+# So we must completely override the generic commands and provide our own.
+#
 define  HOST_GCC_FINAL_CONFIGURE_CMDS
 	(cd $(HOST_GCC_FINAL_SRCDIR) && rm -rf config.cache; \
 		$(HOST_CONFIGURE_OPTS) \
@@ -116,6 +125,15 @@ endef
 HOST_GCC_FINAL_POST_INSTALL_HOOKS += HOST_GCC_FINAL_LD_LINUX_LINK
 endif
 
+# coldfire is not working without removing these object files from libgcc.a
+ifeq ($(BR2_m68k_cf),y)
+define HOST_GCC_FINAL_M68K_LIBGCC_FIXUP
+	find $(STAGING_DIR) -name libgcc.a -print | \
+		while read t; do $(GNU_TARGET_NAME)-ar dv "$t" _ctors.o; done
+endef
+HOST_GCC_FINAL_POST_INSTALL_HOOKS += HOST_GCC_FINAL_M68K_LIBGCC_FIXUP
+endif
+
 # Cannot use the HOST_GCC_FINAL_USR_LIBS mechanism below, because we want
 # libgcc_s to be installed in /lib and not /usr/lib.
 define HOST_GCC_FINAL_INSTALL_LIBGCC
@@ -184,10 +202,6 @@ define HOST_GCC_FINAL_INSTALL_USR_LIBS
 	$(HOST_GCC_FINAL_INSTALL_SHARED_LIBS)
 endef
 HOST_GCC_FINAL_POST_INSTALL_HOOKS += HOST_GCC_FINAL_INSTALL_USR_LIBS
-endif
-
-ifeq ($(BR2_xtensa),y)
-HOST_GCC_FINAL_CONF_OPTS += --enable-cxx-flags="$(TARGET_ABI)"
 endif
 
 $(eval $(host-autotools-package))

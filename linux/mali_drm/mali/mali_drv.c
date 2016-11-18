@@ -57,6 +57,9 @@ static struct file_operations mali_fops = {
 	 .unlocked_ioctl = drm_ioctl,
 	 .mmap = drm_mmap,
 	 .poll = drm_poll,
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(3,10,33))
+	 .fasync = drm_fasync,
+#endif
 };
 
 static struct drm_driver driver = 
@@ -113,15 +116,16 @@ int mali_drm_init(struct platform_device *dev)
 	}
 	return 0;
 }
+#if (LINUX_VERSION_CODE > KERNEL_VERSION(3,10,33))
 void drm_platform_exit(struct drm_driver *driver, struct platform_device *platform_device)
 {
 	struct drm_device *dev, *tmp;
 	DRM_DEBUG("\n");
-
 	list_for_each_entry_safe(dev, tmp, &driver->legacy_dev_list, legacy_dev_list)
 		drm_put_dev(dev);
 	DRM_INFO("Module unloaded\n");
 }
+#endif
 
 void mali_drm_exit(struct platform_device *dev)
 {

@@ -5,7 +5,8 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdarg.h>
-
+#include <string.h>
+#include <memory.h>
 #define MAX_CURL_URI_SIZE 4096
 
 /* base time unit is us */

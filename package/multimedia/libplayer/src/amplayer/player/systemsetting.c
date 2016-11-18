@@ -242,7 +242,7 @@ int PlayerGetAFilterFormat(const char *prop)
 		} 		
     }
 
-	filter_fmt &= ~(FILTER_AFMT_AC3|FILTER_AFMT_EAC3);
+	filter_fmt &= ~(FILTER_AFMT_AC3|FILTER_AFMT_EAC3|FILTER_AFMT_DTS);
 
 	log_print("[%s:%d]filter_afmt=0x%x\n", __FUNCTION__, __LINE__, filter_fmt);
     return filter_fmt;

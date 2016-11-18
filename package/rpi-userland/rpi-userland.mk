@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-RPI_USERLAND_VERSION = 8306b7c757f4b8e8d9148789eeb64c666d9244a5
+RPI_USERLAND_VERSION = 52eca998aa43f278314579dba4798a3fe1da46c3
 RPI_USERLAND_SITE = $(call github,raspberrypi,userland,$(RPI_USERLAND_VERSION))
 RPI_USERLAND_LICENSE = BSD-3c
 RPI_USERLAND_LICENSE_FILES = LICENCE
@@ -35,14 +35,14 @@ RPI_USERLAND_CONF_OPTS += -DALL_APPS=ON
 define RPI_USERLAND_EXTRA_LIBS_TARGET
 	$(INSTALL) -m 0644 -D \
 		$(@D)/build/lib/libilclient.so \
-		$(TARGET_DIR)/usr/lib/libilcient.so
+		$(TARGET_DIR)/usr/lib/libilclient.so
 endef
 RPI_USERLAND_POST_INSTALL_TARGET_HOOKS += RPI_USERLAND_EXTRA_LIBS_TARGET
 
 define RPI_USERLAND_EXTRA_LIBS_STAGING
 	$(INSTALL) -m 0644 -D \
 		$(@D)/build/lib/libilclient.so \
-		$(STAGING_DIR)/usr/lib/libilcient.so
+		$(STAGING_DIR)/usr/lib/libilclient.so
 endef
 RPI_USERLAND_POST_INSTALL_STAGING_HOOKS += RPI_USERLAND_EXTRA_LIBS_STAGING
 

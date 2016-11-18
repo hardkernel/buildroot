@@ -16,3 +16,8 @@ config BR2_PACKAGE_RTK8723BS_GIT_REPO_URL
 	help
 		rtk8723bs git
 
+config BR2_PACKAGE_RTK8723BS_STANDALONE
+	bool "standalone kernel module"
+	depends on BR2_PACKAGE_RTK8723BS
+	help
+	  compile ko directly

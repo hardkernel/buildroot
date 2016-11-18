@@ -1257,6 +1257,109 @@ int h264_update_frame_header(am_packet_t *pkt)
     }
     return PLAYER_SUCCESS;
 }
+int vp9_update_frame_header(am_packet_t *pkt)
+{
+    int dsize = pkt->data_size;
+    unsigned char *buf = pkt->data;
+    unsigned char marker;
+    int frame_number;
+    int cur_frame, cur_mag, mag, index_sz, offset[9], size[8], tframesize[9];
+    int mag_ptr;
+    int ret;
+    unsigned char *old_header = NULL;
+    int total_datasize = 0;
+
+    if (buf == NULL) return PLAYER_SUCCESS; /*something error. skip add header*/
+    marker = buf[dsize - 1];
+    if ((marker & 0xe0) == 0xc0) {
+        frame_number = (marker & 0x7) + 1;
+        mag = ((marker >> 3) & 0x3) + 1;
+        index_sz = 2 + mag * frame_number;
+        log_info(" frame_number : %d, mag : %d; index_sz : %d\n", frame_number, mag, index_sz);
+        offset[0] = 0;
+        mag_ptr = dsize - mag * frame_number - 2;
+        if (buf[mag_ptr] != marker) {
+            log_info(" Wrong marker2 : 0x%X --> 0x%X\n", marker, buf[mag_ptr]);
+            return PLAYER_SUCCESS;
+        }
+        mag_ptr++;
+        for (cur_frame = 0; cur_frame < frame_number; cur_frame++) {
+            size[cur_frame] = 0; // or size[0] = bytes_in_buffer - 1; both OK
+            for (cur_mag = 0; cur_mag < mag; cur_mag++) {
+                size[cur_frame] = size[cur_frame]  | (buf[mag_ptr] << (cur_mag*8) );
+                mag_ptr++;
+            }
+            offset[cur_frame+1] = offset[cur_frame] + size[cur_frame];
+            if (cur_frame == 0)
+                tframesize[cur_frame] = size[cur_frame];
+            else
+                tframesize[cur_frame] = tframesize[cur_frame - 1] + size[cur_frame];
+            total_datasize += size[cur_frame];
+        }
+    } else {
+        frame_number = 1;
+        offset[0] = 0;
+        size[0] = dsize; // or size[0] = bytes_in_buffer - 1; both OK
+        total_datasize += dsize;
+        tframesize[0] = dsize;
+    }
+    if (total_datasize > dsize) {
+        log_info("DATA overflow : 0x%X --> 0x%X\n", total_datasize, dsize);
+        return PLAYER_SUCCESS;
+    }
+    if (frame_number >= 1) {
+        /*
+        if only one frame ,can used headers.
+        */
+        int need_more = total_datasize + frame_number * 16 - dsize;
+        ret = av_grow_packet(pkt->avpkt, need_more);
+        if (ret < 0) {
+            log_info("ERROR!!! grow_packet for apk failed.!!!\n");
+            return ret;
+        }
+        pkt->data = pkt->avpkt->data;
+        pkt->data_size = pkt->avpkt->size;
+    }
+    for (cur_frame = frame_number - 1; cur_frame >= 0; cur_frame--) {
+        AVPacket *avpkt = pkt->avpkt;
+        int framesize = size[cur_frame];
+        int oldframeoff = tframesize[cur_frame] - framesize;
+        int outheaderoff = oldframeoff + cur_frame * 16;
+        uint8_t *fdata = avpkt->data + outheaderoff;
+        uint8_t *old_framedata = avpkt->data + oldframeoff;
+        memmove(fdata + 16, old_framedata, framesize);
+        framesize += 4;/*add 4. for shift.....*/
+
+        /*add amlogic frame headers.*/
+        fdata[0] = (framesize >> 24) & 0xff;
+        fdata[1] = (framesize >> 16) & 0xff;
+        fdata[2] = (framesize >> 8) & 0xff;
+        fdata[3] = (framesize >> 0) & 0xff;
+        fdata[4] = ((framesize >> 24) & 0xff) ^0xff;
+        fdata[5] = ((framesize >> 16) & 0xff) ^0xff;
+        fdata[6] = ((framesize >> 8) & 0xff) ^0xff;
+        fdata[7] = ((framesize >> 0) & 0xff) ^0xff;
+        fdata[8] = 0;
+        fdata[9] = 0;
+        fdata[10] = 0;
+        fdata[11] = 1;
+        fdata[12] = 'A';
+        fdata[13] = 'M';
+        fdata[14] = 'L';
+        fdata[15] = 'V';
+        framesize -= 4;/*del 4 to real framesize for check.....*/
+       if (!old_header) {
+           ///nothing
+       } else if (old_header > fdata + 16 + framesize) {
+           log_info("data has gaps,set to 0\n");
+           memset(fdata + 16 + framesize, 0, (old_header - fdata + 16 + framesize));
+       } else if (old_header < fdata + 16 + framesize) {
+           log_info("ERROR!!! data over writed!!!! over write %d\n", fdata + 16 + framesize - old_header);
+       }
+       old_header = fdata;
+    }
+    return PLAYER_SUCCESS;
+}
 
 int divx3_prefix(am_packet_t *pkt)
 {

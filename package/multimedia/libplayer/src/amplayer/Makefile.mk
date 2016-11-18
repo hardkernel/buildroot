@@ -30,7 +30,7 @@ TARGET?=libamplayer.so
 
 TARGET_IS_LIB=$(TARGET:%so=yes)
 
-LDFLAGS+= -L$(INSTALL_DIR) -lavutil -lavformat -lavcodec -lm  -lpthread -L$(STAGING_DIR)/usr/lib/aml_libs -lamavutils
+LDFLAGS+= -L$(INSTALL_DIR) -lavutil -lavformat -lavcodec -lm  -lpthread -L$(STAGING_DIR)/usr/lib/libplayer -lamavutils
 
 INSTALL_DIR?=$(PREFIX)/lib/libplayer
 LDFLAGS+=-shared 
@@ -44,7 +44,7 @@ else
 endif
 
 
-CFLAGS+= -I${SRCTREE}/../amffmpeg -I${SRCTREE}/../../../aml_libs/src/amcodec/include -I${SRCTREE}/../../../aml_libs/src/amadec/include
+CFLAGS+= -I${SRCTREE}/../amffmpeg -I${SRCTREE}/../amcodec/include -I${SRCTREE}/../amadec/include
 CFLAGS+= -fPIC -g
 target_all=  $(TARGET)
 

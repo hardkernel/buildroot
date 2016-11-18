@@ -40,7 +40,7 @@ define LIBPLAYER_CONFIGURE_CMDS
 		--shlibdir=$(STAGING_DIR)/usr/lib/libplayer \
 		--cross-prefix=$(BR2_TOOLCHAIN_EXTERNAL_PREFIX)- \
 		--arch=$(BR2_ARCH) \
-		--extra-ldflags='-L$(STAGING_DIR)/usr/lib/ -L$(STAGING_DIR)/usr/lib/aml_libs -lamavutils -ldl' \
+		--extra-ldflags='-L$(STAGING_DIR)/usr/lib/ -L$(STAGING_DIR)/usr/lib/libplayer -lamavutils -ldl' \
 		$(AMFFMPEG_CONF_OPTS) \
 
 endef

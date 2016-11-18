@@ -483,7 +483,7 @@ static int update_codec_info(play_para_t *p_para,
         vcodec = p_para->codec;
         acodec = p_para->codec;
     }
-    if (vcodec && p_para->vstream_info.has_video) {
+    if (vcodec && p_para->vstream_info.has_video && p_para->vstream_info.video_format != VFORMAT_SW) {
         if (check_vcodec_state(vcodec, vdec, vbuf) != 0) {
             log_error("check_vcodec_state error!\n");
             return PLAYER_FAILED;

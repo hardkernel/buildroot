@@ -48,7 +48,7 @@ PKG_CHECK_MODULES(GST, [
   gstreamer-controller-0.10 >= $GST_REQUIRED
 ], [
   AC_SUBST(GST_CFLAGS)
-  GST_LIBS="$GST_LIBS -L\$(STAGING_DIR)\$(libdir)/aml_libs -lamcodec -ldl -lamadec -lasound -lamavutils"
+  GST_LIBS="$GST_LIBS -L\$(STAGING_DIR)\$(libdir)/libplayer -lamcodec -ldl -lamadec -lasound -lamavutils -lamplayer"
   AC_SUBST(GST_LIBS)
 ], [
   AC_MSG_ERROR([

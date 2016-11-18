@@ -8,11 +8,7 @@ AML_IMAGE_PACKER_SITE = $(TOPDIR)/package/aml_image_packer/src
 AML_IMAGE_PACKER_SITE_METHOD = local
 
 WORD_NUMBER := $(words $(BR2_LINUX_KERNEL_INTREE_DTS_NAME))
-ifeq ($(WORD_NUMBER),1)
-DTBNAME := $(BR2_LINUX_KERNEL_INTREE_DTS_NAME).dtb
-else
-DTBNAME := dt.img
-endif
+DTBNAME := dtb.img
 
 define HOST_AML_IMAGE_PACKER_BUILD_CMDS
 	$(MAKE) -C $(@D) image_packer

@@ -195,6 +195,7 @@ enum CodecID {
     CODEC_ID_KGV1,
     CODEC_ID_YOP,
     CODEC_ID_VP8,
+    CODEC_ID_VP9,
     CODEC_ID_PICTOR,
     CODEC_ID_ANSI,
     CODEC_ID_A64_MULTI,
@@ -209,6 +210,7 @@ enum CodecID {
 
     /* H264 MVC type */
     CODEC_ID_H264MVC,
+	AV_CODEC_ID_VP9,
     /* HEVC/H.265 type */
     CODEC_ID_HEVC,
 
@@ -2947,6 +2949,8 @@ typedef struct AVCodecContext {
     int long_term_ref_pic;
 } AVCodecContext;
 
+int  av_codec_get_seek_preroll(const AVCodecContext *avctx);
+void av_codec_set_seek_preroll(AVCodecContext *avctx, int val);
 /**
  * AVProfile.
  */

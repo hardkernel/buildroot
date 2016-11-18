@@ -10,17 +10,14 @@ WIFIDISPLAY_SITE=.
 
 DEPENDS=libplayer
 
-export STAGING=$(STAGING_DIR)/usr/lib/wifidisplay
-export PREFIX=$(TARGET_DIR)/usr/lib
-
-export STAGING_INC=$(STAGING_DIR)/usr/include/wifidisplay
-export PREFIX_INC=$(TARGET_DIR)/usr/include/wifidisplay
-
-export WFD_LIB_DIR=$(STAGING_DIR)/usr/lib
-export WFD_INC_DIR=$(STAGING_DIR)/usr/include
-
-export INSTALL_STAG=$(STAGING_DIR)/usr/bin
-export INSTALL_PREFIX=$(TARGET_DIR)/usr/bin
+WIFIDISPLAY_ENV_OPT="STAGING=$(STAGING_DIR)/usr/lib/wifidisplay \
+		    PREFIX=$(TARGET_DIR)/usr/lib \
+		    STAGING_INC=$(STAGING_DIR)/usr/include/wifidisplay \
+		    PREFIX_INC=$(TARGET_DIR)/usr/include/wifidisplay \
+		    WFD_LIB_DIR=$(STAGING_DIR)/usr/lib \
+		    WFD_INC_DIR=$(STAGING_DIR)/usr/include \
+		    INSTALL_STAG=$(STAGING_DIR)/usr/bin \
+		    INSTALL_PREFIX=$(TARGET_DIR)/usr/bin"
 
 $(WIFIDISPLAY_DIR)/.unpacked: wifidisplay-unpacked
 
@@ -33,12 +30,12 @@ wifidisplay-unpacked:
 $(WIFIDISPLAY_DIR)/.installed: $(WIFIDISPLAY_DIR)/wifidisplay
 
 $(WIFIDISPLAY_DIR)/wifidisplay: $(WIFIDISPLAY_DIR)/.unpacked
-	$(MAKE) -C $(WIFIDISPLAY_DIR)
-	$(MAKE) install -C $(WIFIDISPLAY_DIR)
+	$(WIFIDISPLAY_ENV_OPT) $(MAKE) -C $(WIFIDISPLAY_DIR)
+	$(WIFIDISPLAY_ENV_OPT) $(MAKE) install -C $(WIFIDISPLAY_DIR) 
 ifeq ($(BR2_PACKAGE_WIFIDISPLAY_DEMO),y)
-	$(MAKE) example -C $(WIFIDISPLAY_DIR)
+	$(WIFIDISPLAY_ENV_OPT) $(MAKE) example -C $(WIFIDISPLAY_DIR)
 endif
-	$(MAKE) install_include -C $(WIFIDISPLAY_DIR)
+	$(WIFIDISPLAY_ENV_OPT) $(MAKE) install_include -C $(WIFIDISPLAY_DIR)
 	touch $(WIFIDISPLAY_DIR)/.installed
 
 wifidisplay:$(DEPENDS) $(WIFIDISPLAY_DIR)/.installed

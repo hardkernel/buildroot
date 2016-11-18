@@ -136,7 +136,7 @@ static int check_decoder_worksta(play_para_t *para)
         } else {
             codec = para->codec;
         }
-        if (codec) {
+        if (codec && para->vstream_info.video_format != VFORMAT_SW) {
             ret = codec_get_vdec_state(codec, &vdec);
             if (ret != 0) {
                 log_error("pid:[%d]::codec_get_vdec_state error: %x\n", para->player_id, -ret);
@@ -1111,8 +1111,13 @@ log_print("player->start_param->need_start=%d\n",player->start_param->need_start
                 update_player_states(player, 1);
             }
 write_packet:
-            if ((player->vstream_info.video_format == VFORMAT_SW) && (pkt->type == CODEC_VIDEO)) {
-                avcodec_decode_video2(ic, picture, &got_picture, pkt->avpkt);
+            if (0){//(player->vstream_info.video_format == VFORMAT_SW) && (pkt->type == CODEC_VIDEO)) {
+				got_picture = 0;
+				if (pkt->avpkt_isvalid) {
+					avcodec_decode_video2(ic, picture, &got_picture, pkt->avpkt);
+				}
+				pkt->avpkt_isvalid = 0;
+
                 pkt->data_size = 0;
 
                 if (got_picture) {

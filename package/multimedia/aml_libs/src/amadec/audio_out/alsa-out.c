@@ -479,9 +479,9 @@ static void *alsa_playback_loop(void *args)
 
     pthread_mutex_lock(&alsa_params->playback_mutex);
     
-    while( !alsa_params->wait_flag )	
+    while( !alsa_params->wait_flag && alsa_params->stop_flag == 0)	
     {
-        adec_print("yvonnepthread_cond_wait\n");
+        adec_print("pthread_cond_wait\n");
          pthread_cond_wait(&alsa_params->playback_cond, &alsa_params->playback_mutex);
     }
     alsa_params->wait_flag=1;

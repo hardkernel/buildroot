@@ -49,11 +49,12 @@ ifeq ($(WORD_NUMBER),1)
 mkbootimg: $(BINARIES_DIR)/$(LINUX_IMAGE_NAME) $(BINARIES_DIR)/$(ROOTFS_CPIO)
 	@$(call MESSAGE,"Generating boot image")
 	linux/mkbootimg --kernel $(LINUX_IMAGE_PATH) --ramdisk $(BINARIES_DIR)/$(ROOTFS_CPIO) --second $(BINARIES_DIR)/$(KERNEL_DTBS) --output $(BINARIES_DIR)/boot.img
+	ln -sf $(BINARIES_DIR)/$(KERNEL_DTBS) $(BINARIES_DIR)/dtb.img
 else
 mkbootimg: $(BINARIES_DIR)/$(LINUX_IMAGE_NAME) $(BINARIES_DIR)/$(ROOTFS_CPIO)
 	@$(call MESSAGE,"Generating boot image")
-	linux/dtbTool -o $(BINARIES_DIR)/dt.img -p $(LINUX_DIR)/scripts/dtc/ $(BINARIES_DIR)/
-	linux/mkbootimg --kernel $(LINUX_IMAGE_PATH) --ramdisk  $(BINARIES_DIR)/$(ROOTFS_CPIO) --second $(BINARIES_DIR)/dt.img --output $(BINARIES_DIR)/boot.img
+	linux/dtbTool -o $(BINARIES_DIR)/dtb.img -p $(LINUX_DIR)/scripts/dtc/ $(BINARIES_DIR)/
+	linux/mkbootimg --kernel $(LINUX_IMAGE_PATH) --ramdisk  $(BINARIES_DIR)/$(ROOTFS_CPIO) --second $(BINARIES_DIR)/dtb.img --output $(BINARIES_DIR)/boot.img
 endif
 else
 mkbootimg:

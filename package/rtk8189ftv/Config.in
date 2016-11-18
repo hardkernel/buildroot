@@ -16,3 +16,8 @@ config BR2_PACKAGE_RTK8189FTV_GIT_REPO_URL
 	help
 		rtk8189ftv git
 
+config BR2_PACKAGE_RTK8189FTV_STANDALONE
+	bool "standalone kernel module"
+	depends on BR2_PACKAGE_RTK8189FTV
+	help
+	  compile ko directly

@@ -300,7 +300,7 @@ static inline int codec_video_es_init(codec_para_t *pcodec)
     }
 
     flags |= pcodec->noblock ? O_NONBLOCK : 0;
-    if(pcodec->video_type == VFORMAT_HEVC) {
+    if(pcodec->video_type == VFORMAT_HEVC || pcodec->video_type == VFORMAT_VP9) {
 		printf("OPEN es hevc\n");
       handle = codec_h_open(CODEC_VIDEO_ES_HEVC_DEVICE, flags);
     }

@@ -47,6 +47,7 @@
 #define IPV6_DROP_MEMBERSHIP IPV6_LEAVE_GROUP
 #endif
 
+#define closesocket close
 typedef struct {
     int udp_fd;
     int ttl;

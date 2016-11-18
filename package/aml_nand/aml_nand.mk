@@ -13,10 +13,14 @@ AML_NAND_DEPENDENCIES = linux
 endif
 
 ifeq ($(BR2_PACKAGE_AML_NAND_STANDALONE),y)
+define AML_NAND_BUILD_CMDS
+	$(TARGET_CONFIGURE_OPTS) $(MAKE) -C $(LINUX_DIR) M=$(@D)/amlnf_3.14 ARCH=$(KERNEL_ARCH) \
+		EXTRA_CFLAGS+='-I$(@D)/amlnf/include -I$(@D)/amlnf/ntd' CROSS_COMPILE=$(TARGET_CROSS) modules
+endef
 define AML_NAND_INSTALL_TARGET_CMDS
-	mkdir -p $(AML_NAND_INSTALL_DIR)
-	$(INSTALL) -m 0666 $(@D)/module/aml_nftl_dev.ko $(AML_NAND_INSTALL_DIR)
-	echo $(AML_NAND_MODULE_DIR)/aml_nftl_dev.ko: >> $(TARGET_DIR)/lib/modules/$(LINUX_VERSION_PROBED)/modules.dep
+	mkdir -p $(AML_NAND_INSTALL_DIR);
+	$(INSTALL) -m 0666 $(@D)/amlnf_3.14/aml_nftl_dev.ko $(AML_NAND_INSTALL_DIR); \
+	echo $(AML_NAND_MODULE_DIR)/aml_nftl_dev.ko: >> $(TARGET_DIR)/lib/modules/$(LINUX_VERSION_PROBED)/modules.dep;
 endef
 else
 define AML_NAND_BUILD_CMDS

@@ -15,7 +15,7 @@ TOPDIR=$(shell pwd)
 SRC?=$(TOPDIR)
 
 CFLAGS+=-O2 -fPIC
-CFLAGS+=-I$(SRC) -I$(SRC)/../amffmpeg/ -I$(SRC)/../../../aml_libs/amavutils/include -I${M_PREFIX}/include -I$(HEADERS_DIR)
+CFLAGS+=-I$(SRC) -I$(SRC)/../amffmpeg/ -I$(SRC)/../amavutils/include -I${M_PREFIX}/include -I$(HEADERS_DIR)
 
 
 export CC CFLAGS

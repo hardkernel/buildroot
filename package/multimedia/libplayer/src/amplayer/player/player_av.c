@@ -66,6 +66,10 @@ static const media_type media_array[] = {
     {"cmf", MP4_FILE, STREAM_ES},
     {"amr", AMR_FILE, STREAM_AUDIO},
     {"rtp", STREAM_FILE, STREAM_ES},
+    {"dash", MP4_FILE, STREAM_ES},
+	{"matroska,webm", WEBM_FILE, STREAM_ES},
+    {"ogg", OGM_FILE, STREAM_ES},
+	 
 };
 
 aformat_t audio_type_convert(enum CodecID id, pfile_type File_type)
@@ -224,13 +228,17 @@ vformat_t video_type_convert(enum CodecID id)
         break;
 
     case CODEC_ID_VP6F:
-        format = VFORMAT_SW;
+	case CODEC_ID_VP8:
+        format = VFORMAT_SWCODEC;
         break;
 
     case CODEC_ID_CAVS:
     case CODEC_ID_AVS:
         format = VFORMAT_AVS;
         break;
+	case CODEC_ID_VP9:
+		format = VFORMAT_VP9;
+		break;
     default:
         format = VFORMAT_UNSUPPORT;
         log_print("video_type_convert failed:unsupport video,codec_id=0x%x\n", id);
@@ -372,7 +380,12 @@ vdec_type_t video_codec_type_convert(unsigned int id)
 
     case CODEC_ID_VP6F:
         log_print("[video_codec_type_convert]VIDEO_DEC_FORMAT_SW(0x%x)\n", id);
-        dec_type = VIDEO_DEC_FORMAT_SW;
+        dec_type = VIDEO_DEC_FORMAT_VP6F;
+        break;
+
+	case CODEC_ID_VP8:
+        log_print("[video_codec_type_convert]VIDEO_DEC_FORMAT_SW(0x%x)\n", id);
+        dec_type = VIDEO_DEC_FORMAT_VP8;
         break;
 
     case CODEC_ID_CAVS:
@@ -381,9 +394,12 @@ vdec_type_t video_codec_type_convert(unsigned int id)
         log_print("[video_codec_type_convert]VIDEO_DEC_FORMAT_AVS(0x%x)\n", id);
         dec_type = VIDEO_DEC_FORMAT_AVS;
         break;
-
+     case  CODEC_ID_VP9:
+        log_print("[video_codec_type_convert]VIDEO_DEC_FORMAT_VP9(0x%x)\n", id);
+        dec_type = VIDEO_DEC_FORMAT_VP9;
+        break;
     default:
-        log_print("[video_codec_type_convert]error:VIDEO_TYPE_UNKNOW  id = 0x%x\n", id);
+        log_print("1aa[video_codec_type_convert]error:VIDEO_TYPE_UNKNOW  id = 0x%x\n", id);
         dec_type = VIDEO_DEC_FORMAT_UNKNOW;
         break;
     }
@@ -699,9 +715,18 @@ static int non_raw_read(play_para_t *para)
     float value;
     int dump_data_mode = 0;
     char dump_path[128];
+#ifdef ANDROID
     if (am_getconfig_float("media.libplayer.dumpmode", &value) == 0) {
         dump_data_mode = (int)value;
     }
+#else
+       char *getvalue;
+       getvalue=getenv("media_libplayer_dumpmode");
+	if(getvalue!= NULL)
+	{
+            dump_data_mode = atoi(getvalue);
+	}
+#endif
     if (pkt->data_size > 0) {
         if (!para->enable_rw_on_pause) {
             player_thread_wait(para, RW_WAIT_TIME);
@@ -835,24 +860,19 @@ static int non_raw_read(play_para_t *para)
                 para->read_size.apkt_num ++;
                 if(para->astream_info.audio_format ==  AFORMAT_VORBIS)
                 { 
-                     char value[256]={0};
-                     int tmp=0;
-                     tmp =property_get("media.arm.audio.decoder",value,NULL);
-                     if(tmp>0 && strstr(value,"vorbis")!=NULL){
-                       //only insert head for vorbis_armdecoder,not for vorbis_dsp_decoder
+                       // insert head for vorbis_ffmpeg_decoder
                         int new_pkt_size=pkt->avpkt->size+8;
                         char *pdat=malloc(new_pkt_size);
                         if(pdat==NULL){
                             log_print("[%s %d]malloc memory failed!\n",__FUNCTION__,__LINE__);
                         }else{
                             memcpy(pdat,"HEAD",4);
-                            memcpy(pdat+4,&pkt->avpkt->size,4);
+                                 memcpy(pdat+4,&pkt->avpkt->size,4);
                             memcpy(pdat+8,pkt->avpkt->data,pkt->avpkt->size);
                             free(pkt->avpkt->data);
                             pkt->avpkt->data=pdat;
                             pkt->avpkt->size=new_pkt_size;
                         }
-                     }
                 }
             } else if (has_sub && ((1<<(pkt->avpkt->stream_index))&sub_stream)/*&& sub_idx == pkt->avpkt->stream_index*/) {
             //} else if (has_sub && ((1<<(para->pFormatCtx->streams[pkt->avpkt->stream_index]->id))&sub_stream)/*&& sub_idx == pkt->avpkt->stream_index*/) {
@@ -1615,10 +1635,18 @@ int write_av_packet(play_para_t *para)
 		return PLAYER_SUCCESS;
 	}
 	
-    if (am_getconfig_float("media.libplayer.dumpmode", &value) == 0) {
+#ifdef ANDROID
+	if (am_getconfig_float("media.libplayer.dumpmode", &value) == 0) {
         dump_data_mode = (int)value; 
     }
-		
+#else
+       char *getvalue;
+       getvalue=getenv("media_libplayer_dumpmode");
+	if(getvalue!= NULL)
+	{
+            dump_data_mode = atoi(getvalue);
+	}
+#endif
     if (dump_data_mode == DUMP_WRITE_RAW_DATA && fdw_raw == -1) {
         sprintf(dump_path, "/temp/pid%d_dump_write.dat", para->player_id);
         fdw_raw = open(dump_path, O_CREAT | O_RDWR, 0666);
@@ -1848,7 +1876,14 @@ int write_av_packet(play_para_t *para)
 					return PLAYER_SUCCESS;
 				}
 			}
-            write_bytes = codec_write(pkt->codec, (char *)buf, size);
+
+			if(pkt->codec->video_type == VFORMAT_SWCODEC)
+				write_bytes = codec_write_swcodec(pkt->codec, pkt->avpkt);
+            else
+                write_bytes = codec_write(pkt->codec, (char *)buf, size);
+			
+			//log_print("codec_write size:%d write_bytes:%d\n", size, write_bytes);
+			
             if (write_bytes < 0 || write_bytes > size) {
                 if (-errno != AVERROR(EAGAIN)) {
                     para->playctrl_info.check_lowlevel_eagain_cnt = 0;
@@ -2105,6 +2140,14 @@ int set_header_info(play_para_t *para)
                  && para->file_type != STREAM_FILE) {
                 if (!(para->p_pkt->avpkt->flags & AV_PKT_FLAG_ISDECRYPTINFO)){
                     ret = hevc_update_frame_header(pkt);
+                    if (ret != PLAYER_SUCCESS) {
+                        return ret;
+                    }
+                }
+            } else if (para->vstream_info.video_format == VFORMAT_VP9
+                       && para->file_type != STREAM_FILE) {
+                if (!(para->p_pkt->avpkt->flags & AV_PKT_FLAG_ISDECRYPTINFO)) {
+                    ret = vp9_update_frame_header(pkt);
                     if (ret != PLAYER_SUCCESS) {
                         return ret;
                     }

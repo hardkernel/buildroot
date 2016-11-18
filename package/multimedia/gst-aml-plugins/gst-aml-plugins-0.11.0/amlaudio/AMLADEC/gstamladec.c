@@ -699,7 +699,7 @@ static GstFlowReturn gst_amladec_decode (GstAmlAdec *amladec, GstBuffer * buf)
         timestamp = GST_BUFFER_TIMESTAMP (buf);    
         pts=timestamp*9LL/100000LL+1L;
 
-				data = GST_BUFFER_DATA (buf);
+	   data = GST_BUFFER_DATA (buf);
         size = GST_BUFFER_SIZE (buf);	
 		if (timestamp!= GST_CLOCK_TIME_NONE){
             GST_DEBUG_OBJECT (amladec,"pts=%x\n",(unsigned long)pts);
@@ -723,7 +723,7 @@ static GstFlowReturn gst_amladec_decode (GstAmlAdec *amladec, GstBuffer * buf)
 						ret = gst_amladec_write_data(amladec, data, size - dt);
 						
 						/*add head here*/
-            gst_ape_add_startcode(amladec);	
+                                      gst_ape_add_startcode(amladec);	
 						if(amladec->apeparser->ape_head.frames[amladec->apeparser->currentframe].skip  >	0) {
 							gst_amladec_write_data(amladec, data + size - dt - 4, 4);
 						}

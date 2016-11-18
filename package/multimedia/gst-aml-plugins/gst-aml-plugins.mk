@@ -10,7 +10,7 @@ GST_AML_PLUGINS_SITE_METHOD = local
 
 GST_AML_PLUGINS_INSTALL_STAGING = YES
 GST_AML_PLUGINS_AUTORECONF = YES
-GST_AML_PLUGINS_DEPENDENCIES = gstreamer host-pkgconf aml_libs
+GST_AML_PLUGINS_DEPENDENCIES = gstreamer host-pkgconf libplayer
 
 $(eval $(autotools-package))
 

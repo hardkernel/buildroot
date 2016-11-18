@@ -160,6 +160,7 @@ static void get_av_codec_type(play_para_t *p_para)
     if (video_index != -1) {
         pStream = pFormatCtx->streams[video_index];
         pCodecCtx = pStream->codec;
+		p_para->vstream_info.codec_id = pCodecCtx->codec_id;
         p_para->vstream_info.video_format   = video_type_convert(pCodecCtx->codec_id);
         if (pFormatCtx->drmcontent) {
             log_print("[%s:%d]DRM content found, not support yet.\n", __FUNCTION__, __LINE__);
@@ -204,7 +205,7 @@ static void get_av_codec_type(play_para_t *p_para)
                 }
             }
         } else if (p_para->vstream_info.video_format == VFORMAT_SW) {
-            p_para->vstream_info.has_video = 0;
+            p_para->vstream_info.has_video = 1;
         } else if (p_para->vstream_info.video_format == VFORMAT_MPEG4) {
             int wrap_points = (pCodecCtx->mpeg4_vol_sprite >> 16) & 0xffff;
             int vol_sprite = pCodecCtx->mpeg4_vol_sprite & 0xffff;
@@ -239,6 +240,8 @@ static void get_av_codec_type(play_para_t *p_para)
             if (0 != pStream->time_base.den) {
                 p_para->vstream_info.video_duration = ((float)pStream->time_base.num / pStream->time_base.den) * UNIT_FREQ;
                 p_para->vstream_info.video_pts      = ((float)pStream->time_base.num / pStream->time_base.den) * PTS_FREQ;
+
+				codec_checkin_video_ratio(p_para->vstream_info.video_pts);
             }
             p_para->vstream_info.video_width    = pCodecCtx->width;
             p_para->vstream_info.video_height   = pCodecCtx->height;
@@ -730,13 +733,22 @@ static void get_stream_info(play_para_t *p_para)
     }
 
     if (video_index != -1) {
-        if (p_para->vstream_info.video_format == VFORMAT_H264) {
+        if (p_para->vstream_info.video_format == VFORMAT_VP9) {
+            if (p_para->vdec_profile.vp9_para.exist) {
+                ;
+            } else {
+                log_print("VP9 not support by current hardware!!\n");
+                unsupported_video = 1;
+            }
+        } else if (p_para->vstream_info.video_format == VFORMAT_H264) {
             if ((p_para->vstream_info.video_width > 4096) ||
                 (p_para->vstream_info.video_height > 2304)) {
                 unsupported_video = 1;
                 log_print("[%s:%d] H.264 video profile not supported", __FUNCTION__, __LINE__);
             } else if ((p_para->vstream_info.video_width * p_para->vstream_info.video_height) > (1920 * 1088)) {
-                if (p_para->vdec_profile.h264_4k2k_para.exist) {
+                if (p_para->vdec_profile.h264_para.support_4k) {
+                    p_para->vstream_info.video_format = VFORMAT_H264;
+                } else if (p_para->vdec_profile.h264_4k2k_para.exist) {
                     p_para->vstream_info.video_format = VFORMAT_H264_4K2K;
                     log_print("H.264 4K2K video format applied.");
                 } else {
@@ -835,7 +847,9 @@ static int set_decode_para(play_para_t*am_p)
             am_p->vstream_info.video_format=VFORMAT_H264;/*if kernel not support mvc,just playing as 264 now.*/
             if ((am_p->vstream_info.video_width > 1920) ||
                 (am_p->vstream_info.video_height > 1088)) {
-                if (am_p->vdec_profile.h264_4k2k_para.exist) {
+                if (am_p->vdec_profile.h264_para.support_4k) {
+                    am_p->vstream_info.video_format = VFORMAT_H264;
+                } else if (am_p->vdec_profile.h264_4k2k_para.exist) {
                     am_p->vstream_info.video_format = VFORMAT_H264_4K2K;
                     log_print("H.264 4K2K video format applied.");
                 } else {
@@ -1571,7 +1585,7 @@ int player_dec_init(play_para_t *p_para)
         log_print("====bitrate=%d max_raw_size=%d\n", p_para->pFormatCtx->bit_rate, p_para->max_raw_size);
     }
     subtitle_para_init(p_para);
-
+     log_print("[player_dec_init]ok\n");
     //set_tsync_enable(1);        //open av sync
     //p_para->playctrl_info.avsync_enable = 1;
     return PLAYER_SUCCESS;

@@ -12,8 +12,8 @@ INSTALL_FLAGS=-m 755
 
 TARGET=kplayer
 
-LDFLAGS= -L$(PREFIX)/lib/libplayer -lavutil -lavformat -lavcodec -lm -lz -lpthread -lamcodec -ldl -lamplayer -lamadec -lasound -lamstreaming -L$(STAGING_DIR)/usr/lib/aml_libs -lamavutils -lrt -lstdc++
-CFLAGS+= -I${BUILD_DIR}/../amffmpeg -I${BUILD_DIR}/../../../aml_libs/src/amcodec/include -I${BUILD_DIR}/../../../aml_libs/src/amadec/include 
+LDFLAGS= -L$(PREFIX)/lib/libplayer -lavutil -lavformat -lavcodec -lm -lz -lpthread -lamcodec -ldl -lamplayer -lamadec -lasound -lamstreaming  -lamavutils -lrt -lstdc++
+CFLAGS+= -I${BUILD_DIR}/../amffmpeg -I${BUILD_DIR}/../amcodec/include -I${BUILD_DIR}/../amadec/include 
 CFLAGS+= -I${BUILD_DIR}/../amplayer/player/include -I${BUILD_DIR}/../amplayer/player -I${BUILD_DIR}/../streamsource
 CFLAGS+= -I$(INC_DIR)
 CFLAGS+=-O2 -g
@@ -30,15 +30,11 @@ endif
 .PHONY: all config  before_cmd install clean distclean
 
 all: ${TARGET}
-
+	mkdir -p $(TARGET_DIR)/../lib/firmware
 install:all
 	install $(INSTALL_FLAGS) $(TARGET) $(TARGET_DIR)/bin
-	cp -rf $(LIB_DIR)/libavutil* $(TARGET_DIR)/lib
-	cp -rf $(LIB_DIR)/libavformat* $(TARGET_DIR)/lib
-	cp -rf $(LIB_DIR)/libavcodec* $(TARGET_DIR)/lib
-	cp -rf $(LIB_DIR)/libamplayer* $(TARGET_DIR)/lib
-	cp -rf $(LIB_DIR)/libamstreaming* $(TARGET_DIR)/lib
-
+	cp -rf $(LIB_DIR)/*.so* $(TARGET_DIR)/lib
+      
 distclean:clean
     
 clean:

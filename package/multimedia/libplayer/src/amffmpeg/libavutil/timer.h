@@ -28,7 +28,9 @@
 #include <stdint.h>
 #include "config.h"
 
-#if   ARCH_ARM
+#if   ARCH_AARCH64
+#   include "aarch64/timer.h"
+#elif ARCH_ARM
 #   include "arm/timer.h"
 #elif ARCH_BFIN
 #   include "bfin/timer.h"

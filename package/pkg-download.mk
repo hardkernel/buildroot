@@ -212,8 +212,10 @@ define SOURCE_CHECK
 endef
 
 define DOWNLOAD_INNER
-	$(Q)if test -n "$(call qstrip,$(BR2_PRIMARY_SITE))" ; then \
+	$(Q)$(if $(filter bzr cvs git hg svn,$($(PKG)_SITE_METHOD)),export BR_NO_CHECK_HASH_FOR=$(2);) \
+	if test -n "$(call qstrip,$(BR2_PRIMARY_SITE))" ; then \
 		case "$(call geturischeme,$(BR2_PRIMARY_SITE))" in \
+			file) $(call $(3)_LOCALFILES,$(BR2_PRIMARY_SITE)/$(2),$(2)) && exit ;; \
 			scp) $(call $(3)_SCP,$(BR2_PRIMARY_SITE)/$(2),$(2)) && exit ;; \
 			*) $(call $(3)_WGET,$(BR2_PRIMARY_SITE)/$(2),$(2)) && exit ;; \
 		esac ; \
@@ -222,13 +224,9 @@ define DOWNLOAD_INNER
 		exit 1 ; \
 	fi ; \
 	if test -n "$(1)" ; then \
-		if test -z "$($(PKG)_SITE_METHOD)" ; then \
-			scheme="$(call geturischeme,$(1))" ; \
-		else \
-			scheme="$($(PKG)_SITE_METHOD)" ; \
-		fi ; \
-		case "$$scheme" in \
+		case "$($(PKG)_SITE_METHOD)" in \
 			git) $($(3)_GIT) && exit ;; \
+			ssh) $($(3)_GIT) && exit ;; \
 			svn) $($(3)_SVN) && exit ;; \
 			cvs) $($(3)_CVS) && exit ;; \
 			bzr) $($(3)_BZR) && exit ;; \

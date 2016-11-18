@@ -3238,6 +3238,10 @@ int av_find_stream_info(AVFormatContext *ic)
 		av_log(NULL,AV_LOG_ERROR,"localplay force close fastswitch for parser profile\n");
 		fast_switch = 0;
 	}
+	 else if (fast_switch&&strcmp(ic->iformat->name, "mpegts") && !ic->is_dash_demuxer && strcmp(ic->iformat->name, "dash")){
+        av_log(NULL,AV_LOG_ERROR,"not ts force close fastswitch for parser profile\n");
+        fast_switch = 0;
+	 }
 	/* make all the stream  valid at the beginning*/ 
       for(i=0;i<ic->nb_streams;i++) {
 	  	 st = ic->streams[i];

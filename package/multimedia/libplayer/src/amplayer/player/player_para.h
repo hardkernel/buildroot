@@ -40,7 +40,8 @@ typedef struct {
     unsigned int    video_codec_rate;
     vdec_type_t     video_codec_type;
     int             extradata_size;
-    uint8_t             *extradata;
+    uint8_t         *extradata;
+    int             codec_id;
 } v_stream_info_t;
 
 typedef struct {

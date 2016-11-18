@@ -157,6 +157,8 @@ typedef struct {
     uint64_t default_duration;
     uint64_t flag_default;
     uint64_t flag_forced;
+    uint64_t codec_delay;
+    uint64_t seek_preroll;
     MatroskaTrackVideo video;
     MatroskaTrackAudio audio;
     MatroskaTrackOperation operation;
@@ -384,6 +386,8 @@ static EbmlSyntax matroska_track[] = {
     { MATROSKA_ID_TRACKAUDIO,           EBML_NEST, 0, offsetof(MatroskaTrack,audio), {.n=matroska_track_audio} },
     { MATROSKA_ID_TRACKOPERATION,       EBML_NEST, 0, offsetof(MatroskaTrack,operation), {.n=matroska_track_operation} },
     { MATROSKA_ID_TRACKCONTENTENCODINGS,EBML_NEST, 0, 0, {.n=matroska_track_encodings} },
+    { MATROSKA_ID_CODECDELAY,           EBML_UINT, 0, offsetof(MatroskaTrack,codec_delay) },
+    { MATROSKA_ID_SEEKPREROLL,          EBML_UINT, 0, offsetof(MatroskaTrack,seek_preroll) },
     { MATROSKA_ID_TRACKFLAGENABLED,     EBML_NONE },
     { MATROSKA_ID_TRACKFLAGLACING,      EBML_NONE },
     { MATROSKA_ID_CODECNAME,            EBML_NONE },
@@ -450,6 +454,8 @@ static EbmlSyntax matroska_chapters[] = {
 static EbmlSyntax matroska_index_pos[] = {
     { MATROSKA_ID_CUETRACK,           EBML_UINT, 0, offsetof(MatroskaIndexPos,track) },
     { MATROSKA_ID_CUECLUSTERPOSITION, EBML_UINT, 0, offsetof(MatroskaIndexPos,pos)   },
+    { MATROSKA_ID_CUERELATIVEPOSITION,EBML_NONE },
+    { MATROSKA_ID_CUEDURATION,        EBML_NONE },
     { MATROSKA_ID_CUEBLOCKNUMBER,     EBML_NONE },
     { 0 }
 };
@@ -1651,6 +1657,17 @@ static int matroska_read_header(AVFormatContext *s, AVFormatParameters *ap)
             st->codec->channels = track->audio.channels;
             if (st->codec->codec_id != CODEC_ID_AAC)
             st->need_parsing = AVSTREAM_PARSE_HEADERS;
+            if (track->codec_delay > 0) {
+                st->codec->delay = av_rescale_q(track->codec_delay,
+                                                (AVRational){1, 1000000000},
+                                                (AVRational){1, st->codec->sample_rate});
+            }
+            if (track->seek_preroll > 0) {
+            //    av_codec_set_seek_preroll(st->codec,
+            //                              av_rescale_q(track->seek_preroll,
+            //                                           (AVRational){1, 1000000000},
+            //                                           (AVRational){1, st->codec->sample_rate}));
+            }
         } else if (track->type == MATROSKA_TRACK_TYPE_SUBTITLE) {
             st->codec->codec_type = AVMEDIA_TYPE_SUBTITLE;
         }

@@ -30,7 +30,7 @@
 #include <poll.h>
 #endif
 #include <sys/time.h>
-
+#define closesocket close
 typedef struct TCPContext {
     int fd;
 } TCPContext;

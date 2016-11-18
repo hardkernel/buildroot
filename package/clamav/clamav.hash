@@ -1,2 +1,2 @@
-# From http://sourceforge.net/projects/clamav/files/clamav/0.98.7/
-sha1	c9793d67c041e2b944116d912f8681c8bd6e4432	clamav-0.98.7.tar.gz
+# Locally calculated
+sha256	167bd6a13e05ece326b968fdb539b05c2ffcfef6018a274a10aeda85c2c0027a	clamav-0.99.2.tar.gz

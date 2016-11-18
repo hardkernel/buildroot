@@ -924,6 +924,8 @@ typedef struct AVFormatContext {
     /* added by Z.C for DRM content */
     int drmcontent;
 	int skip_extradata;
+    // dash parse.
+    int is_dash_demuxer;
 } AVFormatContext;
 
 typedef struct AVPacketList {

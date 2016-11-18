@@ -9,7 +9,7 @@ SETOOLS_SOURCE = setools-$(SETOOLS_VERSION).tar.bz2
 SETOOLS_SITE = https://raw.githubusercontent.com/wiki/TresysTechnology/setools3/files/dists/setools-$(SETOOLS_VERSION)
 SETOOLS_DEPENDENCIES = libselinux libsepol sqlite libxml2 bzip2 host-bison host-flex
 SETOOLS_INSTALL_STAGING = YES
-SETOOLS_LICENSE = GPLv2+ LGPLv2.1+
+SETOOLS_LICENSE = GPLv2+, LGPLv2.1+
 SETOOLS_LICENSE_FILES = COPYING COPYING.GPL COPYING.LGPL
 
 # configure.ac is patched by the cross compile patch,
@@ -30,6 +30,10 @@ SETOOLS_CONF_OPTS = \
 	--disable-swig-tcl \
 	--with-sepol-devel="$(STAGING_DIR)/usr" \
 	--with-selinux-devel="$(STAGING_DIR)/usr"
+
+ifeq ($(BR2_sparc64):$(BR2_STATIC_LIBS),y:)
+SETOOLS_CONF_ENV += CFLAGS="$(TARGET_CFLAGS) -fPIC"
+endif
 
 HOST_SETOOLS_DEPENDENCIES = host-libselinux host-libsepol host-sqlite \
 	host-libxml2 host-bzip2 host-bison
