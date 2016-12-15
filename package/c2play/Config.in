@@ -1,6 +1,7 @@
 config BR2_PACKAGE_C2PLAY
         bool "c2play"
 	select BR2_PACKAGE_ALSA_LIB
+	select BR2_PACKAGE_LIBASS
 	select BR2_PACKAGE_FFMPEG
 	select BR2_PACKAGE_AML_LIBS
         help
@@ -8,3 +9,8 @@ config BR2_PACKAGE_C2PLAY
 
 	  https://github.com/OtherCrashOverride/c2play
 
+config BR2_PACKAGE_C2PLAY_VERSION
+	string "c2play branch"
+	depends on BR2_PACKAGE_C2PLAY
+	help
+	  the branch of c2play
