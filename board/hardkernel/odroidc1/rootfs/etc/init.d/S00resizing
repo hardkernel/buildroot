@@ -1,0 +1,11 @@
+#!/bin/sh
+
+case "$1" in
+	start)
+		if [ -f /aafirstboot ]; then /aafirstboot; fi
+		;;
+	*)
+		;;
+esac
+
+exit $?
