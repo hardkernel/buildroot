@@ -175,7 +175,7 @@ UBOOT_KCONFIG_EDITORS = menuconfig xconfig gconfig nconfig
 UBOOT_KCONFIG_OPTS = $(UBOOT_MAKE_OPTS)
 endif # BR2_TARGET_UBOOT_BUILD_SYSTEM_LEGACY
 
-ifeq ($(filter y, $(BR2_TARGET_UBOOT_AMLOGIC_2015)$(BR2_TARGET_UBOOT_AMLOGIC)),y)
+ifeq ($(filter y, $(BR2_TARGET_UBOOT_ODROID)$(BR2_TARGET_UBOOT_AMLOGIC_2015)$(BR2_TARGET_UBOOT_AMLOGIC)),y)
 define UBOOT_BUILD_CMDS
 	$(TARGET_CONFIGURE_OPTS) $(UBOOT_CONFIGURE_OPTS) 	\
 		$(MAKE) -j4 -C $(@D) $(UBOOT_MAKE_TARGET)
@@ -229,13 +229,14 @@ endef
 
 define UBOOT_INSTALL_IMAGES_CMDS
 	cp -dpf $(@D)/$(UBOOT_BIN) $(BINARIES_DIR)/
+
 	$(if $(BR2_TARGET_UBOOT_FORMAT_NAND),
 		cp -dpf $(@D)/$(UBOOT_MAKE_TARGET) $(BINARIES_DIR))
 	$(if $(BR2_TARGET_UBOOT_SPL),
 		cp -dpf $(@D)/$(call qstrip,$(BR2_TARGET_UBOOT_SPL_NAME)) $(BINARIES_DIR)/)
-	$(if $(filter y, $(BR2_TARGET_UBOOT_ODROID)$(BR2_TARGET_UBOOT_ODROID_C2),y),
+	$(if $(filter y, $(BR2_TARGET_UBOOT_ODROID)$(BR2_TARGET_UBOOT_ODROID_C2)),
 		cp -dpf $(@D)/sd_fuse/sd_fusing.sh $(BINARIES_DIR)/)
-	$(if $(filter y, $(BR2_TARGET_UBOOT_ODROID)$(BR2_TARGET_UBOOT_ODROID_C2),y),
+	$(if $(filter y, $(BR2_TARGET_UBOOT_ODROID)$(BR2_TARGET_UBOOT_ODROID_C2)),
 		cp -dpf $(@D)/sd_fuse/bl1.bin.hardkernel $(BINARIES_DIR)/)
 	$(if $(BR2_TARGET_UBOOT_AMLOGIC),
 		cp -dpf $(@D)/mksdcard $(BINARIES_DIR)/)
